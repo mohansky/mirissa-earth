@@ -1,0 +1,130 @@
+---
+import { v2 as cloudinary } from "cloudinary";
+import Vcard from "./Vcard.astro";
+
+interface CloudinaryVideoResource {
+  public_id: string;
+  format: string;
+  url: string;
+  duration: number;
+}
+
+cloudinary.config({
+  cloud_name: "mogs",
+  api_key: import.meta.env.PUBLIC_CLOUDINARY_API_KEY || "your-api-key",
+  api_secret: import.meta.env.CLOUDINARY_API_SECRET || "your-api-secret",
+});
+
+let videos = [];
+try {
+  const result = await cloudinary.api.resources({
+    type: "upload",
+    prefix: "videos/",
+    max_results: 50,
+    resource_type: "video",
+  });
+
+  videos = result.resources.map(
+    (resource: {
+      public_id: string;
+      format: any;
+      url: string;
+      duration: number;
+    }) => ({
+      id: resource.public_id.split("/").pop(),
+      publicId: resource.public_id,
+      format: resource.format,
+      url: resource.url,
+      duration: resource.duration,
+      thumbnail: `https://res.cloudinary.com/mogs/video/upload/c_thumb,w_360,g_auto/${resource.public_id}.jpg`,
+    })
+  );
+} catch (error) {
+  console.error("Error fetching videos from Cloudinary:", error);
+}
+
+// Format duration from seconds to MM:SS
+const formatDuration = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+};
+---
+
+<div>
+  {videos.length === 0 && <p>No videos found</p>}
+
+  <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {
+      videos.map(
+        (video: {
+          id: string;
+          publicId: string;
+          format: string;
+          url: string;
+          duration: number;
+          thumbnail: string;
+        }) => (
+          <Vcard video={video.url} title={video.id} image={video.thumbnail} />
+
+          //   <li class="video-item">
+          //     <img
+          //       src={video.thumbnail}
+          //       alt={`Thumbnail for ${video.id}`}
+          //       class="video-thumbnail"
+          //       loading="lazy"
+          //     />
+          //     <div class="video-info">
+          //       <h3>{video.id}</h3>
+          //     </div>
+          //   </li>
+        )
+      )
+    }
+  </ul>
+</div>
+
+<!-- <style>
+  .video-list-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .video-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .video-item {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 1rem 0;
+  }
+
+  .video-thumbnail {
+    width: 120px;
+    height: 68px;
+    object-fit: cover;
+    margin-right: 1rem;
+    border-radius: 4px;
+  }
+
+  .video-info {
+    flex-grow: 1;
+  }
+
+  .video-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  .video-duration {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #666;
+  }
+</style> -->

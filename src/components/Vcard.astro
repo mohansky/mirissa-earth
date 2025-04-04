@@ -1,0 +1,82 @@
+---
+import Heading from "./Heading.astro";
+
+interface Props {
+  video: string;
+  title: string;
+  class?: string;
+  image?: string;
+}
+
+const { video, title, image, class: className = "" } = Astro.props;
+---
+
+<div>
+  <media-controller>
+    <video
+      slot="media"
+      crossorigin="anonymous"
+      preload="auto"
+      controls
+      playsinline
+      src={video}
+      poster={image}
+      class={`aspect-video mx-auto p-0 rounded-2xl ${className}`}
+    >
+    </video>
+    <media-control-bar>
+      <media-play-button></media-play-button>
+      <media-seek-backward-button></media-seek-backward-button>
+      <media-seek-forward-button></media-seek-forward-button>
+      <media-mute-button></media-mute-button>
+      <media-volume-range></media-volume-range>
+      <media-time-display></media-time-display>
+      <media-time-range></media-time-range>
+      <media-duration-display></media-duration-display>
+      <media-fullscreen-button></media-fullscreen-button>
+    </media-control-bar>
+  </media-controller>
+  <Heading size="md" fontweight="medium" class="text-center">{title}</Heading>
+</div>
+
+<script>
+  // Helper function to check if video loads correctly
+  document.addEventListener("DOMContentLoaded", () => {
+    const videoElements = document.querySelectorAll("video");
+
+    videoElements.forEach((video) => {
+      // Log when video is ready to play
+      video.addEventListener("canplay", () => {
+        console.log("Video can play now:", video.src);
+      });
+
+      // Detailed error logging
+      video.addEventListener("error", (e) => {
+        console.error("Video error:", {
+          message: e,
+          videoSrc: video.src,
+          errorCode: video.error ? video.error.code : "unknown",
+          errorMessage: video.error ? video.error.message : "unknown",
+        });
+      });
+
+      // Force reload if needed
+      if (video.networkState === 3) {
+        // NETWORK_NO_SOURCE
+        console.log("Attempting to reload video...");
+        video.load();
+      }
+    });
+  });
+</script>
+
+<style>
+  video {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+  }
+
+  video.loaded {
+    opacity: 1;
+  }
+</style>

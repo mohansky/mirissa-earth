@@ -1,0 +1,116 @@
+---
+import { v2 as cloudinary } from "cloudinary";
+import PhotoSwipeGallery from "./PhotoSwipeGallery.astro";
+import GalleryItem from "./GalleryItem.astro";
+
+interface CloudinaryResource {
+  public_id: string;
+  width: number;
+  height: number;
+  format: string;
+  url: string;
+  secure_url: string;
+}
+
+cloudinary.config({
+  cloud_name: "mogs",
+  api_key: import.meta.env.PUBLIC_CLOUDINARY_API_KEY || "your-api-key",
+  api_secret: import.meta.env.CLOUDINARY_API_SECRET || "your-api-secret",
+});
+
+let images = [];
+try {
+  const result = await cloudinary.api.resources({
+    type: "upload",
+    prefix: "mirissa/",
+    max_results: 50,
+    resource_type: "image",
+  });
+ 
+  images = result.resources.map(
+    (resource: {
+      public_id: string;
+      width: any;
+      height: any;
+      format: any;
+      url: string;
+    }) => ({
+      id: resource.public_id.split("/").pop(),
+      publicId: resource.public_id,
+      width: resource.width,
+      height: resource.height,
+      format: resource.format,
+      url: resource.url,
+    })
+  );
+} catch (error) {
+  console.error("Error fetching from Cloudinary:", error);
+}
+---
+
+<PhotoSwipeGallery>
+  {
+    images.map(
+      (image: {
+        url: string;
+        publicId: string;
+        width: number;
+        height: number;
+        id: string;
+        format: string;
+      }) => (
+        <GalleryItem
+          src={image.url}
+          width={image.width}
+          height={image.height}
+          id={image.id}
+          format={image.format}
+          alt={image.id}
+        />
+      )
+    )
+  }
+</PhotoSwipeGallery>
+
+<script define:vars={{ cloudName: "mogs", images }} is:inline>
+  import PhotoSwipeLightbox from "photoswipe/lightbox";
+  import "photoswipe/style.css";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const galleryElement = document.getElementById("gallery");
+    if (!galleryElement) {
+      return;
+    }
+ 
+    const loadingElement = galleryElement.querySelector(".loading");
+    if (loadingElement) {
+      loadingElement.remove();
+    }
+ 
+    images.forEach((image) => {
+      const fullSizeUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${image.publicId}.${image.format}`;
+      const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_thumb,w_360,g_auto/${image.publicId}.${image.format}`;
+ 
+      const linkElement = document.createElement("a");
+      linkElement.href = fullSizeUrl;
+      linkElement.dataset.pswpWidth = image.width.toString();
+      linkElement.dataset.pswpHeight = image.height.toString();
+      linkElement.className = "gallery-item";
+
+      const imgElement = document.createElement("img");
+      imgElement.src = thumbnailUrl;
+      imgElement.alt = image.id || "Gallery image";
+      imgElement.loading = "lazy"; 
+      linkElement.appendChild(imgElement);
+      galleryElement.appendChild(linkElement);
+    });
+ 
+    const lightbox = new PhotoSwipeLightbox({
+      gallery: "#gallery",
+      children: "a",
+      pswpModule: () => import("photoswipe"),
+    });
+
+    lightbox.init();
+  });
+</script>

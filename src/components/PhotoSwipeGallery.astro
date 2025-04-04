@@ -1,0 +1,27 @@
+---
+// PhotoSwipeGallery.astro
+---
+
+<div class="gallery-container">
+  <div class="pswp-gallery grid grid-cols-3 gap-4" id="my-gallery">
+    <slot />
+  </div>
+</div>
+
+<script>
+  import PhotoSwipeLightbox from "photoswipe/lightbox";
+  import "photoswipe/style.css";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const lightbox = new PhotoSwipeLightbox({
+      gallery: "#my-gallery",
+      children: "a",
+      pswpModule: () => import("photoswipe"),
+      loop: true,
+    });
+
+    lightbox.init();
+  });
+</script>
+
+ 

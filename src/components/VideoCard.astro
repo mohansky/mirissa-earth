@@ -1,0 +1,97 @@
+---
+import Heading from "./Heading.astro";
+import { Image } from "astro:assets";
+
+interface Props {
+  video: string;
+  title: string;
+  class?: string;
+  image?: string;
+}
+
+const { video, title, image, class: className = "" } = Astro.props;
+---
+
+<div x-data="{ showVideo: false }" x-cloak>
+  <template x-if="!showVideo">
+    <div class="relative w-1/3 mx-auto">
+      <Image
+        src={image ||
+          "https://res.cloudinary.com/mogs/image/upload/v1656574066/images/foot%20spa.jpg"}
+        class="w-full aspect-video object-cover rounded-2xl"
+        alt={title}
+        width={600}
+        height={600}
+      />
+
+      <div class="absolute top-0 left-0 w-full h-full bg-black/25 rounded-2xl">
+      </div>
+      <button
+        @click="showVideo = true"
+        class="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full p-6"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="48"
+          height="48"
+          viewBox="0 0 48 48"
+          ><defs
+            ><mask id="ipTPlay0"
+              ><g
+                fill="#555555"
+                stroke="#fff"
+                stroke-linejoin="round"
+                stroke-width="4"
+                ><path
+                  d="M24 44c11.046 0 20-8.954 20-20S35.046 4 24 4S4 12.954 4 24s8.954 20 20 20Z"
+                ></path><path d="M20 24v-6.928l6 3.464L32 24l-6 3.464l-6 3.464z"
+                ></path></g
+              ></mask
+            ></defs
+          ><path fill="currentColor" d="M0 0h48v48H0z" mask="url(#ipTPlay0)"
+          ></path></svg
+        >
+      </button>
+      <Heading class="absolute bottom-0 left-1/2 -translate-x-1/2">
+        {title}
+      </Heading>
+    </div>
+  </template>
+
+  <template x-if="showVideo">
+    <div class="rounded-2xl">
+      <media-controller>
+        <video
+          id="cloudinaryVideo"
+          slot="media"
+          crossorigin="anonymous"
+          preload="auto"
+          muted
+          playsinline
+          src={video}
+          poster={image}
+          class={`aspect-video mx-auto p-0 rounded-2xl ${className}`}
+        >
+        </video>
+        <media-control-bar>
+          <media-play-button></media-play-button>
+          <media-seek-backward-button></media-seek-backward-button>
+          <media-seek-forward-button></media-seek-forward-button>
+          <media-mute-button></media-mute-button>
+          <media-volume-range></media-volume-range>
+          <media-time-display></media-time-display>
+          <media-time-range></media-time-range>
+          <media-duration-display></media-duration-display>
+          <media-fullscreen-button></media-fullscreen-button>
+        </media-control-bar>
+      </media-controller>
+    </div>
+  </template>
+</div>
+
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<style>
+  [x-cloak] {
+    display: none !important;
+  }
+</style>

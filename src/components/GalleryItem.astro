@@ -1,0 +1,41 @@
+--- 
+import { CldImage } from "astro-cloudinary";
+import Heading from "./Heading.astro";
+
+// GalleryItem.astro
+interface Props {
+  src: string;
+  width: number;
+  height: number;
+  alt?: string;
+  thumbnail?: string;
+  id?: string;
+  format?: string;
+}
+
+const { src, width, height, alt = "", thumbnail = src, id, format } = Astro.props;
+---
+
+<div class="card shadow-none">
+  <a
+    href={src}
+    data-pswp-width={width}
+    data-pswp-height={height}
+    target="_blank"
+    class="block cursor-zoom-in"
+  >
+    <figure>
+      <CldImage
+        src={thumbnail}
+        width={480}
+        height={360}
+        alt={id}
+        class="rounded-xl"
+      />
+    </figure>
+    <div class="card-body items-center text-center">
+      <Heading class="card-title capitalize">{id}</Heading>
+      <!-- <h2 class="card-title capitalize">{id}</h2> -->
+    </div>
+  </a>
+</div>
